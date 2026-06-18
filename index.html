@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ApiTech - Plataforma inteligente de monitoreo de colmenas con sensores IoT en tiempo real">
+<meta name="keywords" content="colmenas, monitoreo, sensores, apiario, inteligente">
+<meta name="theme-color" content="#FFC72C">
+
+<title>ApiTech - Monitoreo Inteligente de Colmenas</title>
+
+<link rel="stylesheet" href="CSS/estilos.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* Estilos adicionales para mejorar la landing */
+.header {
+    position: sticky;
+    top: 0;
+    background: var(--card);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    z-index: 1000;
+    margin-bottom: 0;
+}
+
+.container {
+    padding: 20px 20px !important;
+}
+
+.hero {
+    margin-top: 40px;
+    margin-bottom: 60px;
+    animation: fadeInDown 0.8s ease;
+}
+
+.hero h1 {
+    font-size: clamp(32px, 8vw, 48px);
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+
+.hero p {
+    font-size: clamp(14px, 2vw, 18px);
+    opacity: 0.85;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    animation: fadeInUp 0.8s ease 0.2s both;
+}
+
+.hero-buttons .btn {
+    padding: 14px 32px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-primary {
+    box-shadow: 0 4px 15px rgba(255, 199, 44, 0.3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 8px 25px rgba(255, 199, 44, 0.4);
+    transform: translateY(-3px);
+}
+
+.btn-outline {
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    box-shadow: 0 4px 15px rgba(255, 199, 44, 0.2);
+    transform: translateY(-3px);
+}
+
+.features {
+    margin-top: 80px;
+    margin-bottom: 60px;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: clamp(24px, 5vw, 36px);
+    margin-bottom: 50px;
+    font-weight: 700;
+}
+
+.card {
+    animation: fadeInUp 0.6s ease;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--primary);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.card:hover::before {
+    transform: scaleX(1);
+}
+
+.card:nth-child(1) { animation-delay: 0.1s; }
+.card:nth-child(2) { animation-delay: 0.2s; }
+.card:nth-child(3) { animation-delay: 0.3s; }
+.card:nth-child(4) { animation-delay: 0.4s; }
+.card:nth-child(5) { animation-delay: 0.5s; }
+.card:nth-child(6) { animation-delay: 0.6s; }
+
+.card h3 {
+    font-size: clamp(16px, 3vw, 20px);
+    margin-bottom: 12px;
+    color: var(--text);
+    font-weight: 700;
+}
+
+.card p {
+    font-size: clamp(13px, 2vw, 15px);
+    opacity: 0.8;
+    line-height: 1.6;
+}
+
+.card i {
+    font-size: 40px;
+    margin-bottom: 15px;
+    display: block;
+    animation: float 3s ease-in-out infinite;
+}
+
+.card i:nth-child(1) { animation-delay: 0s; }
+.card i:nth-child(2) { animation-delay: 0.5s; }
+.card i:nth-child(3) { animation-delay: 1s; }
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* FOOTER */
+.footer {
+    background: var(--dark);
+    color: white;
+    padding: 60px 20px 20px;
+    margin-top: 100px;
+    border-top: 3px solid var(--primary);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-section h4 {
+    color: var(--primary);
+    margin-bottom: 20px;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.footer-section ul {
+    list-style: none;
+}
+
+.footer-section ul li {
+    margin-bottom: 12px;
+}
+
+.footer-section a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+    color: var(--primary);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 199, 44, 0.2);
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-bottom p {
+    margin: 5px 0;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px 15px !important;
+    }
+
+    .hero {
+        margin-top: 30px;
+        margin-bottom: 40px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+    }
+
+    .features {
+        margin-top: 60px;
+    }
+
+    .features h2 {
+        margin-bottom: 30px;
+    }
+
+    .card {
+        padding: 20px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        margin-bottom: 0;
+    }
+
+    .logo h2 {
+        font-size: 18px;
+    }
+
+    .logo img {
+        width: 40px;
+    }
+
+    .hero h1 {
+        font-size: 28px;
+    }
+
+    .hero p {
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 12px 20px !important;
+        font-size: 14px !important;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="header">
+<div class="container" style="padding: 20px 20px !important; margin-bottom: 0 !important;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div class="logo">
+            <img src="IMG/apitech_logo.png" alt="ApiTech Logo">
+            <h2>ApiTech</h2>
+        </div>
+        <nav>
+            <a href="LOGIN/login.php">
+                <button class="btn btn-primary">
+                    <i class="fa-solid fa-sign-in-alt" style="margin-right: 8px;"></i>Ingresar
+                </button>
+            </a>
+        </nav>
+    </div>
+</div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+<div class="container" style="text-align: center;">
+    <h1>🐝 Monitoreo Inteligente de Colmenas</h1>
+
+    <p>
+        Plataforma tecnológica para el control, análisis y monitoreo en tiempo real
+        de colmenas mediante sensores inteligentes y análisis de datos avanzado.
+    </p>
+
+    <div class="hero-buttons">
+        <a href="LOGIN/login.php">
+            <button class="btn btn-primary">
+                <i class="fa-solid fa-rocket" style="margin-right: 8px;"></i>Comenzar
+            </button>
+        </a>
+
+        <a href="LOGIN/login.php">
+            <button class="btn btn-outline">
+                <i class="fa-solid fa-user-plus" style="margin-right: 8px;"></i>Crear cuenta
+            </button>
+        </a>
+    </div>
+</div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section class="features">
+<div class="container">
+    <h2>Características Principales</h2>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-top: 60px;">
+
+        <div class="card">
+            <i class="fa-solid fa-microchip"></i>
+            <h3>Sensores Inteligentes</h3>
+            <p>Controla temperatura, humedad, presión y actividad de tus colmenas con precisión en tiempo real.</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-chart-line"></i>
+            <h3>Análisis de Datos</h3>
+            <p>Visualiza estadísticas completas y producción de miel con gráficos interactivos e históricos.</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-bell"></i>
+            <h3>Alertas Automáticas</h3>
+            <p>Recibe notificaciones instantáneas cuando una colmena presente problemas o anomalías.</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-file-pdf"></i>
+            <h3>Reportes Detallados</h3>
+            <p>Genera reportes personalizados en PDF con toda la información y análisis de tus colmenas.</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-mobile"></i>
+            <h3>Acceso Móvil</h3>
+            <p>Accede desde cualquier dispositivo con interfaz responsive y optimizada para todos los tamaños.</p>
+        </div>
+
+        <div class="card">
+            <i class="fa-solid fa-lock"></i>
+            <h3>Seguridad Garantizada</h3>
+            <p>Tus datos están protegidos con cifrado SSL/TLS y cumplimos estándares de seguridad internacionales.</p>
+        </div>
+
+    </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="footer-content">
+    <div class="footer-section">
+        <h4><i class="fa-solid fa-cube" style="margin-right: 8px;"></i>Producto</h4>
+        <ul>
+            <li><a href="LOGIN/login.php">Dashboard</a></li>
+            <li><a href="LOGIN/login.php">Características</a></li>
+            <li><a href="LOGIN/login.php">Precios</a></li>
+            <li><a href="LOGIN/login.php">Planes</a></li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <h4><i class="fa-solid fa-book" style="margin-right: 8px;"></i>Recursos</h4>
+        <ul>
+            <li><a href="#">Documentación</a></li>
+            <li><a href="#">API Reference</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Tutorial</a></li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <h4><i class="fa-solid fa-building" style="margin-right: 8px;"></i>Empresa</h4>
+        <ul>
+            <li><a href="#">Sobre Nosotros</a></li>
+            <li><a href="#">Contacto</a></li>
+            <li><a href="#">Política de Privacidad</a></li>
+            <li><a href="#">Términos de Uso</a></li>
+        </ul>
+    </div>
+
+    <div class="footer-section">
+        <h4><i class="fa-solid fa-share-nodes" style="margin-right: 8px;"></i>Síguenos</h4>
+        <ul>
+            <li><a href="#"><i class="fa-brands fa-facebook"></i> Facebook</a></li>
+            <li><a href="#"><i class="fa-brands fa-twitter"></i> Twitter</a></li>
+            <li><a href="#"><i class="fa-brands fa-instagram"></i> Instagram</a></li>
+            <li><a href="#"><i class="fa-brands fa-linkedin"></i> LinkedIn</a></li>
+        </ul>
+    </div>
+</div>
+
+<div class="footer-bottom">
+    <p>&copy; 2026 ApiTech. Todos los derechos reservados.</p>
+    <p>Hecho con <i class="fa-solid fa-heart" style="color: var(--primary);"></i> para apicultores apasionados</p>
+</div>
+</footer>
+
+<script>
+// Smooth scroll para enlaces internos
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+});
+
+// Detección de tema oscuro
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+}
+
+console.log('✓ ApiTech - Plataforma de monitoreo de colmenas cargada correctamente');
+</script>
+
+</body>
+
+</html>
