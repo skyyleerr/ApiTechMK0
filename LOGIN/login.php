@@ -1,92 +1,64 @@
 <?php
 session_start();
 include("../CONEXION/conexion.php");
-
+ 
 $error = "";
-$mensaje = "";
-
+ 
+// No se puede llegar al login sin haber validado antes el NIT de la empresa
+if (!isset($_SESSION['nit_validado']) || !isset($_SESSION['empresa_id'])) {
+    header("Location: verificar_nit.php");
+    exit();
+}
+ 
 // Redirigir si ya está logueado
-if(isset($_SESSION['usuario_id'])) {
+if (isset($_SESSION['usuario_id'])) {
     header("Location: ../DASHBOARD/dashboard.php");
     exit();
 }
-
-if(isset($_POST['login'])){
+ 
+if (isset($_POST['login'])) {
     $correo = trim($_POST['correo'] ?? '');
     $password = $_POST['password'] ?? '';
-
-    // Validar que los campos no estén vacíos
-    if(empty($correo) || empty($password)){
+ 
+    if (empty($correo) || empty($password)) {
         $error = "Por favor completa todos los campos";
     } else if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
         $error = "Por favor ingresa un correo válido";
     } else {
-        // Usar prepared statements para evitar SQL Injection
-        $stmt = $conn->prepare("SELECT id_usuario, nombre, correo, password FROM usuarios WHERE correo=?");
-        $stmt->bind_param("s", $correo);
+        // El usuario debe existir Y pertenecer a la empresa ya validada por NIT
+        $stmt = $conn->prepare("SELECT id_usuario, nombre, correo, password, rol FROM usuarios WHERE correo=? AND id_empresa=?");
+        $stmt->bind_param("si", $correo, $_SESSION['empresa_id']);
         $stmt->execute();
         $result = $stmt->get_result();
-
-        if($result->num_rows > 0){
+ 
+        if ($result->num_rows > 0) {
             $usuario = $result->fetch_assoc();
-            // Verificar contraseña (preferentemente con password_verify)
-            if(password_verify($password, $usuario['password']) || $usuario['password'] === $password){
-                // Guardar datos en sesión
-                $_SESSION['usuario_id'] = $usuario['id_usuario'];
+ 
+            if (password_verify($password, $usuario['password']) || $usuario['password'] === $password) {
+                // Sesión completa del usuario
+                session_regenerate_id(true);
+ 
+                $_SESSION['usuario_id']     = $usuario['id_usuario'];
                 $_SESSION['usuario_nombre'] = $usuario['nombre'];
                 $_SESSION['usuario_correo'] = $usuario['correo'];
-                
-                // Registrar actividad (opcional)
-                error_log("Usuario {$usuario['id_usuario']} inició sesión en " . date('Y-m-d H:i:s'));
-                
-                header("Location: ../DASHBOARD/dashboard.php");
+                $_SESSION['usuario_rol']    = $usuario['rol'];
+ 
+                error_log("Usuario {$usuario['id_usuario']} ({$usuario['rol']}) inició sesión en " . date('Y-m-d H:i:s'));
+ 
+                $stmt->close();
+ 
+                // Redirección según el rol
+                if ($usuario['rol'] === 'admin') {
+                    header("Location: ../DASHBOARD/dashboard.php");
+                } else {
+                    header("Location: ../DASHBOARD/dashboard.php"); // ver nota en README sobre vista limitada
+                }
                 exit();
             } else {
                 $error = "Correo o contraseña incorrectos";
             }
         } else {
             $error = "Correo o contraseña incorrectos";
-        }
-        $stmt->close();
-    }
-}
-
-if(isset($_POST['registro'])){
-    $nombre = trim($_POST['nombre'] ?? '');
-    $correo = trim($_POST['correo'] ?? '');
-    $password = $_POST['password'] ?? '';
-
-    // Validar que los campos no estén vacíos
-    if(empty($correo) || empty($password) || empty($nombre)){
-        $error = "Todos los campos son obligatorios";
-    } else if (strlen($nombre) < 3) {
-        $error = "El nombre debe tener al menos 3 caracteres";
-    } else if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
-        $error = "Por favor ingresa un correo válido";
-    } else if (strlen($password) < 6) {
-        $error = "La contraseña debe tener al menos 6 caracteres";
-    } else {
-        // Verificar si el correo ya existe
-        $stmt = $conn->prepare("SELECT id_usuario FROM usuarios WHERE correo=?");
-        $stmt->bind_param("s", $correo);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        if($result->num_rows > 0){
-            $error = "Ya existe una cuenta registrada con ese correo";
-        } else {
-            // Hashear la contraseña antes de guardar
-            $passwordHash = password_hash($password, PASSWORD_BCRYPT);
-            
-            $stmt = $conn->prepare("INSERT INTO usuarios(nombre, correo, password, fecha_registro) VALUES(?, ?, ?, NOW())");
-            $stmt->bind_param("sss", $nombre, $correo, $passwordHash);
-            
-            if($stmt->execute()){
-                $mensaje = "✓ Cuenta creada correctamente. Por favor inicia sesión.";
-                error_log("Nuevo usuario registrado: $correo en " . date('Y-m-d H:i:s'));
-            } else {
-                $error = "Error al registrar el usuario. Intenta nuevamente.";
-            }
         }
         $stmt->close();
     }
@@ -209,114 +181,83 @@ if(isset($_POST['registro'])){
 
 </head>
 
+<!DOCTYPE html>
+<html lang="es">
+ 
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ApiTech - Acceso a la plataforma de monitoreo de colmenas">
+<meta name="theme-color" content="#FFC72C">
+ 
+<title>ApiTech - Acceso</title>
+ 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="../CSS/login.css">
+</head>
 <body>
-
+ 
 <div class="container">
-
+ 
     <!-- LOGO -->
     <div class="logo">
         <img src="../IMG/apitech_logo.png" alt="ApiTech Logo">
         <h2>ApiTech</h2>
     </div>
-
+ 
+    <p style="text-align:center; margin-bottom: 10px; color:#666; font-size: 14px;">
+        <?php echo htmlspecialchars($_SESSION['empresa_nombre']); ?>
+        &nbsp;·&nbsp;
+        <a href="verificar_nit.php" style="color:#FFC72C;">Cambiar de empresa</a>
+    </p>
+ 
     <!-- Mostrar alertas -->
-    <?php if(!empty($error)): ?>
+    <?php if (!empty($error)): ?>
         <div class="alert alert-danger" id="alert">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span><?php echo htmlspecialchars($error); ?></span>
         </div>
     <?php endif; ?>
-
-    <?php if(!empty($mensaje)): ?>
-        <div class="alert alert-success" id="alert">
-            <i class="fa-solid fa-circle-check"></i>
-            <span><?php echo htmlspecialchars($mensaje); ?></span>
-        </div>
-    <?php endif; ?>
-
+ 
     <!-- LOGIN FORM -->
     <div id="login" class="slide">
         <div class="title">Iniciar Sesión</div>
-
+ 
         <form method="POST" novalidate>
             <div class="input-group">
-                <input 
-                    type="email" 
-                    name="correo" 
-                    placeholder="Correo electrónico" 
+                <input
+                    type="email"
+                    name="correo"
+                    placeholder="Correo electrónico"
                     required
                     autocomplete="email">
                 <i class="fa-solid fa-envelope"></i>
             </div>
-
+ 
             <div class="input-group">
-                <input 
-                    type="password" 
-                    name="password" 
-                    placeholder="Contraseña" 
+                <input
+                    type="password"
+                    name="password"
+                    placeholder="Contraseña"
                     required
                     autocomplete="current-password">
                 <i class="fa-solid fa-lock"></i>
             </div>
-
+ 
             <button type="submit" class="btn" name="login">
                 <i class="fa-solid fa-sign-in-alt"></i> Ingresar
             </button>
         </form>
-
-        <div class="switch">
-            ¿No tienes cuenta? <span onclick="toggle()">Regístrate aquí</span>
-        </div>
     </div>
-
-    <!-- REGISTER FORM -->
-    <div id="register" class="hidden">
-        <div class="title">Crear Cuenta</div>
-
-        <form method="POST" novalidate>
-            <div class="input-group">
-                <input 
-                    type="text" 
-                    name="nombre" 
-                    placeholder="Nombre completo" 
-                    required
-                    minlength="3"
-                    autocomplete="name">
-                <i class="fa-solid fa-user"></i>
-            </div>
-
-            <div class="input-group">
-                <input 
-                    type="email" 
-                    name="correo" 
-                    placeholder="Correo electrónico" 
-                    required
-                    autocomplete="email">
-                <i class="fa-solid fa-envelope"></i>
-            </div>
-
-            <div class="input-group">
-                <input 
-                    type="password" 
-                    name="password" 
-                    placeholder="Contraseña (mínimo 6 caracteres)" 
-                    required
-                    minlength="6"
-                    autocomplete="new-password">
-                <i class="fa-solid fa-lock"></i>
-            </div>
-
-            <button type="submit" class="btn" name="registro">
-                <i class="fa-solid fa-user-plus"></i> Registrarse
-            </button>
-        </form>
-
-        <div class="switch">
-            ¿Ya tienes cuenta? <span onclick="toggle()">Inicia sesión aquí</span>
-        </div>
-    </div>
-
+ 
 </div>
+ 
+</body>
+</html>
+
+
+
+
 
 <script>
 /**
@@ -354,6 +295,3 @@ document.addEventListener('DOMContentLoaded', function(){
 console.log('✓ Login page cargada correctamente');
 </script>
 
-</body>
-
-</html>

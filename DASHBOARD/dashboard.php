@@ -9,15 +9,24 @@ if (!isset($_SESSION['usuario_id'])) {
 
 include("../CONEXION/conexion.php");
 
-// Obtener datos de BD con filtro de usuario
+require_once(__DIR__ . '/../LOGIN/auth.php'); // habilita esAdmin() para el menú
+
+// Todos los usuarios de la MISMA empresa ven las mismas colmenas
+$idEmpresa = intval($_SESSION['empresa_id']);
+
 $colmenas_count = 0;
-$resultado = $conn->query("SELECT COUNT(*) as total FROM colmenas WHERE id_usuario = " . intval($_SESSION['usuario_id']));
+$resultado = $conn->query("
+    SELECT COUNT(*) as total
+    FROM colmenas c
+    INNER JOIN usuarios u ON c.id_usuario = u.id_usuario
+    WHERE u.id_empresa = " . $idEmpresa
+);
 if ($resultado) {
     $row = $resultado->fetch_assoc();
     $colmenas_count = $row['total'];
 }
 
-// Tabla de colmenas del usuario actual
+// Tabla de colmenas de TODA la empresa (no solo del usuario que inició sesión)
 $tabla_colmenas = $conn->query("
 SELECT 
 c.id_colmena,
@@ -26,13 +35,26 @@ c.ubicacion,
 c.estado,
 c.fecha_creacion
 FROM colmenas c
-WHERE c.id_usuario = " . intval($_SESSION['usuario_id']) . "
+INNER JOIN usuarios u ON c.id_usuario = u.id_usuario
+WHERE u.id_empresa = " . $idEmpresa . "
 ORDER BY c.id_colmena DESC
 ");
 
 // Obtener usuario logueado
-$usuario_nombre = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : 'Usuario';
-$usuario_correo = isset($_SESSION['usuario_correo']) ? htmlspecialchars($_SESSION['usuario_correo']) : 'usuario@apitech.com';
+// Refrescar nombre/correo desde la BD por si fueron editados en el CRUD de usuarios
+$stmtRefresh = $conn->prepare("SELECT nombre, correo FROM usuarios WHERE id_usuario = ?");
+$stmtRefresh->bind_param("i", $_SESSION['usuario_id']);
+$stmtRefresh->execute();
+$datosActuales = $stmtRefresh->get_result()->fetch_assoc();
+$stmtRefresh->close();
+
+if ($datosActuales) {
+    $_SESSION['usuario_nombre'] = $datosActuales['nombre'];
+    $_SESSION['usuario_correo'] = $datosActuales['correo'];
+}
+
+$usuario_nombre = htmlspecialchars($_SESSION['usuario_nombre'] ?? 'Usuario');
+$usuario_correo = htmlspecialchars($_SESSION['usuario_correo'] ?? 'usuario@apitech.com');
 ?>
 
 <!DOCTYPE html>
@@ -530,6 +552,9 @@ tbody tr:hover {
 <li><a href="../DASHBOARD/produccion.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-jar"></i> Producción</a></li>
 <li><a href="../DASHBOARD/alertas.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-triangle-exclamation"></i> Alertas</a></li>
 <li><a href="../DASHBOARD/reportes.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-file"></i> Reportes</a></li>
+<?php if (esAdmin()): ?>
+<li><a href="../DASHBOARD/usuarios.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-users"></i> Usuarios</a></li>
+<?php endif; ?>
 <li><a href="../DASHBOARD/importar_datos.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-upload"></i> Importar Datos</a></li>
 <li><a href="../DASHBOARD/configuracion.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-gear"></i> Configuración</a></li>
 </ul>

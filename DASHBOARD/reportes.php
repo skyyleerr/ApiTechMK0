@@ -350,6 +350,7 @@ $produccion_recent = $conn->query("
 <a href="../DASHBOARD/reportes.php" style="background: #FFC72C; color: #1a1a1a; display: flex; align-items: center; gap: 10px; border-radius: 8px;">
 <i class="fa-solid fa-file"></i> Reportes
 </a>
+
 </li>
 <li><a href="../DASHBOARD/importar_datos.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-upload"></i> Importar Datos</a></li>
 <li><a href="../DASHBOARD/configuracion.php" style="display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-gear"></i> Configuración</a></li>

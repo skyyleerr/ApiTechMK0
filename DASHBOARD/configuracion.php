@@ -10,8 +10,21 @@ if (!isset($_SESSION['usuario_id'])) {
 include("../CONEXION/conexion.php");
 
 $id_usuario = intval($_SESSION['usuario_id']);
-$usuario_nombre = isset($_SESSION['usuario_nombre']) ? htmlspecialchars($_SESSION['usuario_nombre']) : 'Usuario';
-$usuario_correo = isset($_SESSION['usuario_correo']) ? htmlspecialchars($_SESSION['usuario_correo']) : 'usuario@apitech.com';
+
+// Refrescar nombre/correo desde la BD por si fueron editados en el CRUD de usuarios
+$stmtRefresh = $conn->prepare("SELECT nombre, correo FROM usuarios WHERE id_usuario = ?");
+$stmtRefresh->bind_param("i", $id_usuario);
+$stmtRefresh->execute();
+$datosActuales = $stmtRefresh->get_result()->fetch_assoc();
+$stmtRefresh->close();
+
+if ($datosActuales) {
+    $_SESSION['usuario_nombre'] = $datosActuales['nombre'];
+    $_SESSION['usuario_correo'] = $datosActuales['correo'];
+}
+
+$usuario_nombre = htmlspecialchars($_SESSION['usuario_nombre'] ?? 'Usuario');
+$usuario_correo = htmlspecialchars($_SESSION['usuario_correo'] ?? 'usuario@apitech.com');
 $success = '';
 $error = '';
 
